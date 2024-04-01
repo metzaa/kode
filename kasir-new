@@ -209,6 +209,7 @@ void cetakStruk(void) {
     printf("\n\tData berhasil disimpan ke dalam file '%s'.", filename);
     printf("\n\n\t\t\tTerima Kasih Telah Berbelanja!");
     printf("\n\t===================================================================");
+    exit(EXIT_SUCCESS);
 }
 
 //Fungsi utama program
