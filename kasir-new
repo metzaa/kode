@@ -1,0 +1,252 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+// Struktur untuk menyimpan daftar pilihan barang dan jumlah pembelian
+struct Data {
+    int barang;
+    int buku_tulis, pensil, penghapus, penggaris, bujur;
+} data = {0}; // Inisialisasi semua anggota struct dengan 0
+
+// Struktur untuk menyimpan data barang
+struct BarangData {
+    int id;
+    int jumlah_beli;
+    int harga;
+    char nama[20];
+};
+
+// Array untuk menyimpan data barang
+struct BarangData barang_data[] = {
+    {1,0, 5000, "Buku Tulis"},
+    {2,0, 2000, "Pensil"},
+    {3,0, 1000, "Penghapus"},
+    {4,0, 1000, "Penggaris"},
+    {5,0, 500, "Bujur"}
+};
+
+// Jumlah data barang
+int jumlah_barang = sizeof(barang_data) / sizeof(barang_data[0]);
+
+// Fungsi untuk menghitung diskon
+int hitungDiskon(int jumlah_beli, int total_harga) {
+    int diskon;
+    if (jumlah_beli >= 5) {
+        diskon = total_harga * 15 / 100; // Diskon 15%
+    } else if (jumlah_beli >= 3) {
+        diskon = total_harga * 10 / 100; // Diskon 10%
+    } else {
+        diskon = 0;
+    }
+    return diskon;
+}
+
+// Fungsi untuk mencetak tampilan awal
+void cetakPilihan(void) {
+    printf("\n\n\tSelamat datang di Toko SKENSA.");
+    printf("\n\tSilahkan pilih barang yang Anda inginkan:\n");
+    printf("\n\t================================");
+    printf("\n\t|No. |Barang       |Harga      |");
+    printf("\n\t|------------------------------|");
+    for (int i = 0; i < jumlah_barang; i++) {
+        printf("\n\t|%-3d |%-13s|Rp. %-7d|", i + 1, barang_data[i].nama, barang_data[i].harga);
+    }
+    printf("\n\t===============================\n");
+    printf("\n\t99. Struk Pembayaran\n\t55. Reset Pilihan\n\t00. Keluar\n");
+    printf("\n\t===============================\n");
+} // End
+
+// Fungsi untuk mengatur ulang data pembelian
+void resetData(void) {
+    for (int i = 0; i < jumlah_barang; i++) {
+        barang_data[i].jumlah_beli = 0;
+    }
+} // End
+
+// Fungsi untuk melakukan penghitungan dan menampilkan rekapan pembelian
+void Penghitungan(void) {
+    //Mencetak rekapan pesanan
+    printf("\n\tRekap Pesanan Barang");
+    printf("\n\t=======================================================================");
+    printf("\n\t| No | Jumlah | Nama Barang   | Harga      | Total Harga | Diskon      |");
+    printf("\n\t=======================================================================");
+
+    int total_harga_semua = 0, total_diskon = 0, nomor_barang = 1;
+
+    // Mengurutkan data dari jumlah beli terbanyak ke terkecil menggunakan bubble sort
+    for (int i = 0; i < jumlah_barang - 1; i++) {
+        for (int j = 0; j < jumlah_barang - i - 1; j++) {
+            if (barang_data[j].jumlah_beli < barang_data[j+1].jumlah_beli) {
+                // Menukar data barang
+                struct BarangData temp = barang_data[j];
+                barang_data[j] = barang_data[j+1];
+                barang_data[j+1] = temp;
+            }
+        }
+    }
+
+    for (int i = 0; i < jumlah_barang; i++) {
+        if (barang_data[i].jumlah_beli != 0) {
+            int total_harga = barang_data[i].jumlah_beli * barang_data[i].harga; // Hitung total harga untuk tiap barang
+            total_harga_semua += total_harga;
+
+            int diskon = hitungDiskon(barang_data[i].jumlah_beli, total_harga);// Hitung diskon
+            total_diskon += diskon;
+
+            // Cetak rekapan pembelian
+            printf("\n\t| %-2d | %-6d | %-13s | Rp. %-6d |Rp. %-8d | Rp. %-7d |",
+            nomor_barang++, barang_data[i].jumlah_beli, barang_data[i].nama, barang_data[i].harga, total_harga, diskon);
+        }
+    }
+
+    int total_bayar = total_harga_semua - total_diskon;
+
+    // Menampilkan total harga, diskon, dan total bayar
+    printf("\n\t=======================================================================");
+    printf("\n\tTotal Harga  = Rp. %d,-", total_harga_semua);
+    printf("\n\tTotal Diskon = Rp. %d,-", total_diskon);
+    printf("\n\tTotal Bayar  = Rp. %d,-", total_bayar);
+    printf("\n\t=======================================================================");
+
+    cetakStruk(); //Memanggil fungsi cetakStruk
+}
+
+// Fungsi pembanding untuk qsort()
+int compare(const void *a, const void *b) {
+    const struct BarangData *barang1 = (const struct BarangData *)a;
+    const struct BarangData *barang2 = (const struct BarangData *)b;
+    return (barang1->id - barang2->id);
+}
+
+// Fungsi untuk mengurutkan data barang berdasarkan ID terkecil
+void urutkanBarang(struct BarangData barang_data[], int jumlah_barang) {
+    qsort(barang_data, jumlah_barang, sizeof(struct BarangData), compare);
+}
+
+// Fungsi untuk mencetak struk pembayaran ke file
+void cetakStruk(void) {
+    // Deklarasi Variabel Fungsi Waktu
+    time_t sekarang;
+    time(&sekarang);
+    char ZonaWaktu[80];
+    struct tm *waktu_lokal = localtime(&sekarang);
+    strftime(ZonaWaktu, 80, "%a %b %d %H:%M:%S %Y", waktu_lokal); // Deklarasi Set Time untuk Tampilan
+    // Akhir Deklarasi Variabel Fungsi Waktu
+
+    //Inisialisasi File
+    FILE *file;
+    char filename[50]; // Deklarasi array untuk menyimpan nama file
+    sprintf(filename, "struk_%ld.txt", time(NULL));
+    file = fopen(filename, "w");
+
+    if (file == NULL) { //Mengecek apakah file bisa dibuka
+        printf("Gagal membuka file txt");
+        exit(1);
+    }
+
+    // Mengurutkan data barang berdasarkan ID terkecil sebelum mencetak struk
+    urutkanBarang(barang_data, jumlah_barang);
+
+    //Mencetak ke dalam file txt
+    fprintf(file, "\n\t==========================================================================");
+    fprintf(file, "\n\t|                           Toko SKENSA                                   |");
+    fprintf(file, "\n\t|              Jl. HOS Cokroaminoto No. 84, Denpasar                      |");
+    fprintf(file, "\n\t|                              Bali                                       |");
+    fprintf(file, "\n\t|                      Telp : 0816285791                                  |");
+    fprintf(file, "\n\t|ID Struk : %-62ld|", time(NULL)); // Menulis ID Struk ke dalam file
+    fprintf(file, "\n\t|=========================================================================|");
+    fprintf(file, "\n\t| Jumlah | Nama Barang       | Harga         | Total         | Diskon     |");
+    fprintf(file, "\n\t|=========================================================================|");
+
+    int total_harga_semua = 0, total_diskon = 0; //Inisialisasi
+
+    // Menghitung total harga dan diskon untuk setiap barang yang dibeli
+    for (int i = 0; i < jumlah_barang; i++) {
+        if (barang_data[i].jumlah_beli != 0) {
+            int total_harga = barang_data[i].jumlah_beli * barang_data[i].harga; // Hitung total harga untuk tiap barang
+            total_harga_semua += total_harga;
+
+            int diskon = hitungDiskon(barang_data[i].jumlah_beli, total_harga); // Hitung diskon
+            total_diskon += diskon;
+
+            // Cetak ke file
+            fprintf(file, "\n\t| %-6d | %-17s | Rp. %-9d | Rp. %-9d | Rp. %-6d |",
+            barang_data[i].jumlah_beli, barang_data[i].nama, barang_data[i].harga, total_harga, diskon);
+        }
+    }
+
+    int total_bayar = total_harga_semua - total_diskon; //Menghitung total bayar
+    int uang_dibayar;
+
+    //Loop melakukan pembayaran
+    do {
+        printf("\n\tMasukkan jumlah uang yang dibayar = Rp. ");
+        scanf("%d", &uang_dibayar);
+        if (uang_dibayar < total_bayar) {
+            printf("\n\tUang Anda tidak cukup, masukkan nominal yang benar!\n");
+        }
+    }while (uang_dibayar<total_bayar); //End loop
+
+    int kembalian = uang_dibayar - total_bayar;//Menghitung kembalian
+    printf("\n\tUang kembalian Anda               = Rp. %d", kembalian);
+
+    fprintf(file, "\n\t|=========================================================================|");
+    fprintf(file, "\n\t|                                                                         |");
+    fprintf(file, "\n\t|Total Harga  = Rp. %d                                                 |", total_harga_semua);
+    fprintf(file, "\n\t|Total Diskon = Rp. %d                                                   |", total_diskon);
+    fprintf(file, "\n\t|Tagihan      = Rp. %d                                                 |", total_bayar);
+    fprintf(file, "\n\t|Pembayaran   = Rp. %d                                                 |", uang_dibayar);
+    fprintf(file, "\n\t|Kembalian    = Rp. %d                                                  |", kembalian);
+    fprintf(file, "\n\t|                                                                         |");
+    fprintf(file, "\n\t|                                                                         |");
+    fprintf(file, "\n\t|Waktu / Hari : %-10s                                  |", ZonaWaktu);
+    fprintf(file, "\n\t|                                                                         |");
+    fprintf(file, "\n\t==========================================================================");
+
+    fclose(file); // Menutup file
+    printf("\n\t===================================================================");
+    printf("\n\tData berhasil disimpan ke dalam file '%s'.", filename);
+    printf("\n\n\t\t\tTerima Kasih Telah Berbelanja!");
+    printf("\n\t===================================================================");
+}
+
+//Fungsi utama program
+int main() {
+    cetakPilihan(); //Menampilkan cetakPilihan
+
+    // Perulangan untuk mendapatkan input dari pengguna
+    while (1) {
+        printf("\n\tInput pilihan yang Anda inginkan: ");
+        if (scanf("%d", &data.barang) != 1) { // Memeriksa apakah input yang dimasukkan adalah angka
+            while (getchar() != '\n'); // Menghapus karakter yang tersisa
+            printf("\n\tInput yang Anda masukkan bukan angka!\n");
+            continue; // Kembali ke awal loop
+        }
+
+        if (data.barang >= 1 && data.barang <= jumlah_barang) {
+            int jumlah_beli;
+
+            // Memproses pembelian berdasarkan pilihan barang
+            printf("\n\tPembelian %s", barang_data[data.barang - 1].nama);
+            printf("\n\tJumlah Beli = ");
+            scanf("%d", &jumlah_beli);
+            barang_data[data.barang - 1].jumlah_beli += jumlah_beli;
+            printf("\n\t===================================");
+        } else if (data.barang == 99) {
+            Penghitungan(); // Memanggil fungsi Penghitungan
+        } else if (data.barang == 55) {
+            system("cls"); // Membersihkan layar
+            resetData(); // Memanggil fungsi resetData
+            cetakPilihan(); // Memanggil fungsi cetakPilihan
+        } else if (data.barang == 00) {
+            printf("\n\tTerima Kasih Telah Berbelanja!");
+            exit(EXIT_SUCCESS); // Keluar dari program
+        } else {
+            printf("\n\tInputan salah, pilihan no. %d tidak terdapat dalam daftar", data.barang);
+            printf("\n\tSilahkan inputkan ulang!!");
+        }
+    }
+
+    return 0; //Mengembalikan nilai
+}
